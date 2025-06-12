@@ -137,7 +137,6 @@ export async function ingestPdf(s3Key: string, courseName: string, base_url: str
       "headers": {
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate",
-        "Authorization": `Bearer ${process.env.BEAM_API_KEY}`,
         "Content-Type": "application/json"
       },
       "body": JSON.stringify({
