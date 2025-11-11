@@ -8,9 +8,7 @@ import { Config, configSchema } from "./configValidation.js";
 import { ingestPdf, uploadPdfToS3 } from "./uploadToS3.js";
 import { db } from "../utils/db.js";
 import { documentsInProgress } from "../db/schema.js";
-import {InferInsertModel} from "drizzle-orm";
 
-type NewDocumentInProgress = InferInsertModel<typeof documentsInProgress>;
 
 export async function crawl(rawConfig: Config) {
   const config = configSchema.parse(removeUndefinedFromObject(rawConfig));
