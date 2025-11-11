@@ -2,7 +2,8 @@
 import * as path from 'path';
 import axios from 'axios';
 import { S3Client, PutObjectCommand, HeadBucketCommand, CreateBucketCommand } from '@aws-sdk/client-s3';
-import { supabase } from '../utils/supabaseClient.js';
+import { db } from '../utils/db.js';
+import { documentsInProgress } from '../db/schema.js';
 
 export const aws_config = {
   bucketName: process.env.S3_BUCKET_NAME,
@@ -117,20 +118,14 @@ export async function ingestPdf(s3Key: string, courseName: string, base_url: str
   }
 
   try {
-    const { error } = await supabase.from('documents_in_progress').insert({
-      base_url: base_url,
+    await db.insert(documentsInProgress).values({
+      baseUrl: base_url,
       url: url,
-      readable_filename: path.basename(s3Key),
-      s3_path: s3Key,
-      course_name: courseName,
-      doc_groups: documentGroups,
-    })
-
-    if (error) {
-      console.error(
-        '❌❌ Supabase failed to insert into `documents_in_progress`:',
-        error,)
-    }
+      readableFilename: path.basename(s3Key),
+      s3Path: s3Key,
+      courseName: courseName,
+      docGroups: documentGroups,
+    });
 
     fetch(ingestUrl, {
       "method": "POST",
@@ -157,10 +152,8 @@ export async function ingestPdf(s3Key: string, courseName: string, base_url: str
       .catch(err => console.error(err));
   } catch (error) {
     if (error instanceof Error) {
-      // Now TypeScript knows 'error' is of type 'Error'
-      console.error('Error message:', error.message);
+      console.error('❌❌ Database failed to insert into `documents_in_progress`:', error.message);
     } else {
-      // Handle other types of errors (if any)
       console.error('Unknown error:', error);
     }
   }
