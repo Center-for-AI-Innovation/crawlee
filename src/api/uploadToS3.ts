@@ -119,12 +119,12 @@ export async function ingestPdf(s3Key: string, courseName: string, base_url: str
 
   try {
     await db.insert(documentsInProgress).values({
-      baseUrl: base_url,
+      base_url: base_url,
       url: url,
-      readableFilename: path.basename(s3Key),
-      s3Path: s3Key,
-      courseName: courseName,
-      docGroups: documentGroups,
+      readable_filename: path.basename(s3Key),
+      s3_path: s3Key,
+      course_name: courseName,
+      doc_groups: JSON.stringify(documentGroups),
     });
 
     fetch(ingestUrl, {
