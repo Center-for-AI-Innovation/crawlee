@@ -2,8 +2,6 @@
 import * as path from 'path';
 import axios from 'axios';
 import { S3Client, PutObjectCommand, HeadBucketCommand, CreateBucketCommand } from '@aws-sdk/client-s3';
-import { db } from '../utils/db.js';
-import { documentsInProgress } from '../db/schema.js';
 
 export const aws_config = {
   bucketName: process.env.S3_BUCKET_NAME,
@@ -118,15 +116,6 @@ export async function ingestPdf(s3Key: string, courseName: string, base_url: str
   }
 
   try {
-    await db.insert(documentsInProgress).values({
-      base_url: base_url,
-      url: url,
-      readable_filename: path.basename(s3Key),
-      s3_path: s3Key,
-      course_name: courseName,
-      doc_groups: JSON.stringify(documentGroups),
-    });
-
     fetch(ingestUrl, {
       "method": "POST",
       "headers": {

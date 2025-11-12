@@ -6,8 +6,6 @@ import axios from 'axios';
 
 import { Config, configSchema } from "./configValidation.js";
 import { ingestPdf, uploadPdfToS3 } from "./uploadToS3.js";
-import { db } from "../utils/db.js";
-import { documentsInProgress } from "../db/schema.js";
 
 
 export async function crawl(rawConfig: Config) {
@@ -83,22 +81,6 @@ export async function crawl(rawConfig: Config) {
                 if (!ingestUrl) {
                   console.error('Error: INGEST_URL environment variable is not defined.');
                   return;
-                }
-
-                try {
-                      await db.insert(documentsInProgress).values({
-                        base_url: config.url,
-                        url: request.loadedUrl,
-                        readable_filename: title,
-                        contexts: html,
-                        course_name: config.courseName,
-                        doc_groups: JSON.stringify(config.documentGroups),
-                      });
-                } catch (error) {
-                  console.error(
-                    '❌❌ Database failed to insert into `documents_in_progress`:',
-                    error instanceof Error ? error.message : error,
-                  );
                 }
 
                 fetch(ingestUrl, {
