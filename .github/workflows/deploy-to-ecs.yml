@@ -2,7 +2,7 @@ name: Deploy Crawlee to AWS ECS Fargate
 
 on:
   push:
-    branches: [ crawlee-deploy ]
+    branches: [ illinois-chat ]
     paths:
       - 'src/**'
       - 'dist/**'
@@ -13,11 +13,11 @@ on:
   workflow_dispatch:  # allow manual triggers
 
 env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: crawlee-worker
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: uiuc-chat-crawlee
   ECS_SERVICE: crawlee-service
   ECS_CLUSTER: uiuc-chat-dev
-  ECS_TASK_DEFINITION: crawlee-task
+  ECS_TASK_DEFINITION: crawlee
   CONTAINER_NAME: crawlee
 
 permissions:

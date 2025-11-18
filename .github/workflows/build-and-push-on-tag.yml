@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: crawlee-worker
+  ECR_REPOSITORY: uiuc-chat-crawlee
 
 jobs:
   build-and-push-dev:
