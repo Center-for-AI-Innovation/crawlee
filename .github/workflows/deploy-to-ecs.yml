@@ -15,7 +15,7 @@ on:
 env:
   AWS_REGION: us-east-2
   ECR_REPOSITORY: uiuc-chat-crawlee
-  ECS_SERVICE: crawlee-service
+  ECS_SERVICE: crawlee-service-9fr3asb1
   ECS_CLUSTER: uiuc-chat-dev
   ECS_TASK_DEFINITION: crawlee
   CONTAINER_NAME: crawlee
