@@ -4,25 +4,32 @@ import axios from 'axios';
 import { S3Client, PutObjectCommand, HeadBucketCommand, CreateBucketCommand } from '@aws-sdk/client-s3';
 
 function createS3Client(): S3Client {
-  const region = process.env.AWS_REGION
-  const accessKeyId = process.env.AWS_KEY
-  const secretAccessKey = process.env.AWS_SECRET
+  const region = process.env.AWS_REGION;
+  const accessKeyId = process.env.AWS_KEY;
+  const secretAccessKey = process.env.AWS_SECRET;
 
-  const baseConfig: any = region
-    ? { region }
-    : {}
+  const config: any = {};
 
+  // Only set region if explicitly provided
+  if (region) {
+    config.region = region;
+  }
+
+  // Only set credentials if BOTH are present
   if (accessKeyId && secretAccessKey) {
-    baseConfig.credentials = { accessKeyId, secretAccessKey }
+    config.credentials = {
+      accessKeyId,
+      secretAccessKey,
+    };
   }
 
   // MinIO override (local dev)
   if (process.env.MINIO_ENDPOINT) {
-    baseConfig.endpoint = process.env.MINIO_ENDPOINT
-    baseConfig.forcePathStyle = true
+    config.endpoint = process.env.MINIO_ENDPOINT;
+    config.forcePathStyle = true;
   }
 
-  return new S3Client(baseConfig)
+  return new S3Client(config);
 }
 
 const s3BucketName = process.env.S3_BUCKET_NAME
