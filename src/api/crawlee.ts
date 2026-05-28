@@ -55,6 +55,56 @@ export async function crawl(rawConfig: Config) {
                 });
               }
             }
+            // Extract links from the current page and add them to the crawling queue.
+            // Docs https://crawlee.dev/docs/introduction/adding-urls#filtering-links-to-same-domain
+            // 1. scrape all -- wander the internet.
+            // 2. scrape domain and all subdomains.
+            // 3. scrape just equal and below the given URL -- match statement.
+            if (config.scrapeStrategy == 'all' || config.scrapeStrategy == 'same-domain' || config.scrapeStrategy == 'same-hostname') {
+              await enqueueLinks({
+                strategy: config.scrapeStrategy,
+                exclude:
+                  typeof config.exclude === "string"
+                    ? [config.exclude]
+                    : config.exclude ?? [],
+
+                // Keep this here so if we encounter .pdfs (no matter what URL or strategy), we still grab them
+                transformRequestFunction(req) {
+                  if (req.url.endsWith('.pdf')) {
+                    // Download PDFs specially
+                    console.log(`Downloading PDF: ${req.url}`);
+                    handlePdf(config.courseName, config.url, req.url, config.documentGroups);
+                    return false;
+                  } else {
+                    return req;
+                  }
+                },
+              })
+            } else {
+              // strategy: 'equal-and-below' == stay on the same domain and subdomains (aka. hostname)
+              await enqueueLinks({
+                strategy: 'same-hostname',
+                globs:
+                  typeof config.match === "string" ? [config.match] : config.match,
+                exclude:
+                  typeof config.exclude === "string"
+                    ? [config.exclude]
+                    : config.exclude ?? [],
+
+                // Keep this here so if we encounter .pdfs (no matter what URL or strategy), we still grab them
+                transformRequestFunction(req) {
+                  if (req.url.endsWith('.pdf')) {
+                    // Download PDFs specially
+                    console.log(`Downloading PDF: ${req.url}`);
+                    handlePdf(config.courseName, config.url, req.url, config.documentGroups);
+                    return false;
+                  } else {
+                    return req;
+                  }
+                },
+              });
+            }
+
             // page.on('console', message => console.log(`Page log: ${message.text()}`)); // refactored for memory leaks
             const consoleListener = (message: { text: () => any; }) => console.log(`Page log: ${message.text()}`);
             page.on('console', consoleListener);
@@ -147,56 +197,6 @@ export async function crawl(rawConfig: Config) {
             // }
 
             page.off('console', consoleListener); // remove listener to avoid memory leak
-
-            // Extract links from the current page and add them to the crawling queue.
-            // Docs https://crawlee.dev/docs/introduction/adding-urls#filtering-links-to-same-domain
-            // 1. scrape all -- wander the internet.
-            // 2. scrape domain and all subdomains.
-            // 3. scrape just equal and below the given URL -- match statement.
-            if (config.scrapeStrategy == 'all' || config.scrapeStrategy == 'same-domain' || config.scrapeStrategy == 'same-hostname') {
-              await enqueueLinks({
-                strategy: config.scrapeStrategy,
-                exclude:
-                  typeof config.exclude === "string"
-                    ? [config.exclude]
-                    : config.exclude ?? [],
-
-                // Keep this here so if we encounter .pdfs (no matter what URL or strategy), we still grab them
-                transformRequestFunction(req) {
-                  if (req.url.endsWith('.pdf')) {
-                    // Download PDFs specially 
-                    console.log(`Downloading PDF: ${req.url}`);
-                    handlePdf(config.courseName, config.url, req.url, config.documentGroups);
-                    return false;
-                  } else {
-                    return req;
-                  }
-                },
-              })
-            } else {
-              // strategy: 'equal-and-below' == stay on the same domain and subdomains (aka. hostname)
-              await enqueueLinks({
-                strategy: 'same-hostname',
-                globs:
-                  typeof config.match === "string" ? [config.match] : config.match,
-                exclude:
-                  typeof config.exclude === "string"
-                    ? [config.exclude]
-                    : config.exclude ?? [],
-
-                // Keep this here so if we encounter .pdfs (no matter what URL or strategy), we still grab them
-                transformRequestFunction(req) {
-                  if (req.url.endsWith('.pdf')) {
-                    // Download PDFs specially 
-                    console.log(`Downloading PDF: ${req.url}`);
-                    handlePdf(config.courseName, config.url, req.url, config.documentGroups);
-                    return false;
-                  } else {
-                    return req;
-                  }
-                },
-              });
-            }
           },
           // Comment this option to scrape the full website.
           maxRequestsPerCrawl: config.maxPagesToCrawl,
